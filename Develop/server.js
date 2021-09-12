@@ -2,7 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-var reviews = require('./db/db.json');
+const {v4:uuidv4} = require('uuid');
+var notes = require('./db/db.json');
 
 PORT = process.env.PORT || 5000
 
@@ -28,32 +29,33 @@ app.get('/notes', (req, res) => {
 });
 
 app.get('/api/notes', (req, res) => {
-  console.info(`GET /api/notes`);
-  res.json(reviews);
+  // console.info(`GET /api/notes`);
+  res.json(notes);
 });
 
 app.post('/api/notes', (req, res) => {
-  console.info(`POST /api/notes`);
+  // console.info(`POST /api/notes`);
   
   const {title, text} = req.body;
-console.log(req.body);
+// console.log(req.body);
 
   if (title && text) {
     const newNote = {
       title,
-      text
+      text,
+      id : uuidv4()
     }
   // };
 
-  reviews.push(newNote);
+  notes.push(newNote);
 
-  const updatedNotes =  JSON.stringify(reviews);
+  const updatedNotes =  JSON.stringify(notes);
 
   fs.writeFile('./db/db.json',updatedNotes,(err)=>{
     if (err) 
     console.log(err);
     else {
-      console.log("Data writen to the JSON file");
+      // console.log("Data writen to the JSON file");
       const response ={
         status: "success",
         body: newNote
@@ -65,5 +67,30 @@ console.log(req.body);
   };
 });
 
+
+app.delete('/api/notes/:id', (req,res) =>{
+  // console.log("Delete request received.")  
+  if (req.params.id){
+    updatedNotes = notes.filter(eachNote => eachNote.id != req.params.id); //remove the note from the array
+    
+    console.log(updatedNotes);
+
+    // updatedNotes =  JSON.stringify(notes);
+    // write new array without the deleted note.
+    fs.writeFile('./db/db.json',JSON.stringify(updatedNotes),(err)=>{
+      if (err) 
+      console.log(err);
+      else {
+        console.log("Data removed from the JSON file");
+        const response ={
+          status: "success",
+          
+        }
+        res.status(200).json(response);
+      }
+  
+    });
+  }
+});
 
 app.listen(PORT,()=>console.log(`Server listening on http://localhost:${PORT}/`));
