@@ -8,6 +8,9 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "12.x|14.x"
+  },
   "dependencies": {
     "express": "^4.16.4",
     "uuid": "^8.3.2"
